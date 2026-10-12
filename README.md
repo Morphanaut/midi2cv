@@ -4,6 +4,35 @@
 
 This repository contains the code and schematic for a DIY MIDI to CV converter.  I installed this converter into a home-built analog synthesizer, allowing me to play the synthesizer with my Yamaha CP50 keyboard over MIDI.
 
+## MIDI channel routing variants
+
+This fork includes two firmware variants. Both use the original hardware, DAC scaling and output voltage ranges.
+
+### Three-channel version
+
+The default [`midi2cv.ino`](midi2cv.ino) keeps Note CV, Gate, Velocity CV and Pitch Bend together while routing Trigger and Control Change independently. The channel numbers can be changed near the top of the sketch.
+
+| MIDI channel | Function |
+| --- | --- |
+| 1 | Note CV, Gate, Velocity CV and Pitch Bend |
+| 2 | Trigger pulse from any Note On |
+| 3 | Control Change CV from any CC message |
+
+### Fully separated version
+
+[`midi2cv_full_channels/midi2cv_full_channels.ino`](midi2cv_full_channels/midi2cv_full_channels.ino) assigns a separate MIDI channel to each channel-addressable output.
+
+| MIDI channel | Function |
+| --- | --- |
+| 1 | Note CV |
+| 2 | Gate |
+| 3 | Trigger |
+| 4 | Velocity CV |
+| 5 | Pitch Bend CV |
+| 6 | Control Change CV |
+
+MIDI Clock is a system real-time message and has no MIDI channel, so it remains global in both variants. Select **Arduino Nano** and **ATmega328P (Old Bootloader)** in Arduino IDE when uploading to the tested board.
+
 The MIDI to CV converter includes the following outputs:
 
 * Note CV output (88 keys, 1V/octave) using a 12-bit DAC
