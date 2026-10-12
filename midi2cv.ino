@@ -30,24 +30,6 @@
 #define DAC1  8 
 #define DAC2  9
 
-// MIDI channel routing (valid channel numbers are 1 through 16)
-// Change these values to match the MIDI channels used by your controller.
-#define MAIN_MIDI_CHANNEL     1  // Note, Gate, Velocity and Pitch Bend
-#define TRIGGER_MIDI_CHANNEL  2  // Any Note On produces a 20 ms trigger pulse
-#define CONTROL_MIDI_CHANNEL  3  // Any Control Change controls the CONTROL CV output
-
-#if (MAIN_MIDI_CHANNEL < 1) || (MAIN_MIDI_CHANNEL > 16) || \
-    (TRIGGER_MIDI_CHANNEL < 1) || (TRIGGER_MIDI_CHANNEL > 16) || \
-    (CONTROL_MIDI_CHANNEL < 1) || (CONTROL_MIDI_CHANNEL > 16)
-#error "MIDI channels must be between 1 and 16"
-#endif
-
-#if (MAIN_MIDI_CHANNEL == TRIGGER_MIDI_CHANNEL) || \
-    (MAIN_MIDI_CHANNEL == CONTROL_MIDI_CHANNEL) || \
-    (TRIGGER_MIDI_CHANNEL == CONTROL_MIDI_CHANNEL)
-#error "MAIN, TRIGGER and CONTROL MIDI channels must be different"
-#endif
-
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 void setup()
@@ -101,16 +83,8 @@ void loop()
     switch (type) {
       case midi::NoteOn: 
       case midi::NoteOff:
-        channel = MIDI.getChannel();
-        if (channel == TRIGGER_MIDI_CHANNEL) {
-          if ((type == midi::NoteOn) && (MIDI.getData2() > 0)) {
-            triggerPulse();
-          }
-          break;
-        }
-        if (channel != MAIN_MIDI_CHANNEL) break;
-
         noteMsg = MIDI.getData1() - 21; // A0 = 21, Top Note = 108
+        channel = MIDI.getChannel();
         
         if ((noteMsg < 0) || (noteMsg > 87)) break; // Only 88 notes of keyboard are supported
 
@@ -147,8 +121,6 @@ void loop()
         break;
         
       case midi::PitchBend:
-        if (MIDI.getChannel() != MAIN_MIDI_CHANNEL) break;
-
         d1 = MIDI.getData1();
         d2 = MIDI.getData2(); // d2 from 0 to 127, mid point = 64
 
@@ -159,8 +131,6 @@ void loop()
         break;
 
       case midi::ControlChange: 
-        if (MIDI.getChannel() != CONTROL_MIDI_CHANNEL) break;
-
         d1 = MIDI.getData1();
         d2 = MIDI.getData2(); // From 0 to 127
 
@@ -254,13 +224,10 @@ void commandLastNote()
 
 #define NOTE_SF 47.069f // This value can be tuned if CV output isn't exactly 1V/octave
 
-void triggerPulse() {
-  digitalWrite(TRIG,HIGH);
-  trigTimer = millis();
-}
-
 void commandNote(int noteMsg) {
   digitalWrite(GATE,HIGH);
+  digitalWrite(TRIG,HIGH);
+  trigTimer = millis();
   
   unsigned int mV = (unsigned int) ((float) noteMsg * NOTE_SF + 0.5); 
   setVoltage(DAC1, 0, 1, mV);  // DAC1, channel 0, gain = 2X

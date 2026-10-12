@@ -6,11 +6,11 @@ This repository contains the code and schematic for a DIY MIDI to CV converter. 
 
 ## MIDI channel routing variants
 
-This fork includes two firmware variants. Both use the original hardware, DAC scaling and output voltage ranges.
+The original [`midi2cv.ino`](midi2cv.ino) remains unchanged in the repository root. This fork also includes two channel-routing variants. Both use the original hardware, DAC scaling and output voltage ranges.
 
 ### Three-channel version
 
-The default [`midi2cv.ino`](midi2cv.ino) keeps Note CV, Gate, Velocity CV and Pitch Bend together while routing Trigger and Control Change independently. The channel numbers can be changed near the top of the sketch.
+[`midi2cv_three_channels/midi2cv_three_channels.ino`](midi2cv_three_channels/midi2cv_three_channels.ino) keeps Note CV, Gate, Velocity CV and Pitch Bend together while routing Trigger and Control Change independently. The channel numbers can be changed near the top of the sketch.
 
 | MIDI channel | Function |
 | --- | --- |
